@@ -1,3 +1,4 @@
+import 'package:clue/core/notifier_builder.dart';
 import 'package:clue/main_page.dart';
 import 'package:clue/models/game.dart';
 import 'package:flutter/material.dart';
@@ -44,7 +45,13 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return const Scaffold(
       body: Center(
-        child: MainPageWidget(),
+        child: Column(
+          children: [
+            SizedBox(height: 300),
+            Example(),
+            SizedBox(height: 300,)
+          ],
+        ),
       ),
     );
   }

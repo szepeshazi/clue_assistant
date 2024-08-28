@@ -1,3 +1,5 @@
+import 'package:clue/core/notifier_builder.dart';
+
 class VaultException implements Exception {
   final String message;
 
@@ -8,6 +10,16 @@ class VaultException implements Exception {
 
 class Vault {
   Vault._();
+
+  factory Vault.register() {
+    final vault = Vault._();
+    vault.add<PersonNotifier>(
+      PersonNotifier(
+        Person(name: 'Heidi'),
+      ),
+    );
+    return vault;
+  }
 
   final _store = <Type, Object>{};
 
@@ -48,5 +60,5 @@ class Vault {
     }
   }
 
-  static final instance = Vault._();
+  static final instance = Vault.register();
 }
