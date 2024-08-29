@@ -3,15 +3,15 @@ import 'package:clue/core/vault_provider.dart';
 import 'package:flutter/material.dart';
 
 typedef NotificationStateBuilder<T> = Widget Function(
-    BuildContext context,
-    T state,
-    Widget? child,
-    );
+  BuildContext context,
+  T state,
+  Widget? child,
+);
 
 class NotifierBuilder<T extends Notifier<S>, S> extends StatefulWidget {
   const NotifierBuilder({
     required this.builder,
-    required this.resolver,
+    this.resolver,
     this.selector,
     this.child,
     super.key,
@@ -19,7 +19,7 @@ class NotifierBuilder<T extends Notifier<S>, S> extends StatefulWidget {
 
   final Widget? child;
 
-  final T Function() resolver;
+  final T Function()? resolver;
   final Object Function(S value)? selector;
 
   final NotificationStateBuilder<S> builder;
@@ -36,22 +36,34 @@ class _NotifierBuilderState<T extends Notifier<S>, S>
   void initState() {
     super.initState();
     try {
-      final notifier = widget.resolver();
-      _state = notifier.state;
-      notifier.listen(
-        selector: widget.selector,
-            (value) {
-          setState(() {
-            _state = value;
-          },);
-        },);
+      if (widget.resolver != null) {
+        _subscribe(widget.resolver!);
+      }
     } catch (e) {
       print(e);
     }
   }
 
+  void _subscribe(T Function() resolver) {
+    final notifier = resolver();
+    _state = notifier.state;
+    notifier.listen(
+      selector: widget.selector,
+      (value) {
+        setState(
+          () {
+            _state = value;
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (widget.resolver == null) {
+      _subscribe(context.get<T>);
+    }
     return widget.builder(context, _state, widget.child);
   }
 }
@@ -97,21 +109,18 @@ class Example extends StatelessWidget {
     return Column(
       children: [
         NotifierBuilder<PersonNotifier, Person>(
-          resolver: context.get,
           builder: (context, state, child) {
             return Text('$state');
           },
         ),
         NotifierBuilder<PersonNotifier, Person>(
-          resolver: context.get,
           selector: (v) => v.badge != null,
           builder: (context, state, child) {
             final decorated = state.badge ?? 'no way';
             return Text('Is ${state.name} a decorated person? $decorated');
           },
         ),
-        SizedBox(height: 100),
-
+        const SizedBox(height: 100),
         ElevatedButton(
           onPressed: () => context.get<PersonNotifier>().walk(3000),
           child: const Text('Walk 3000 m'),
